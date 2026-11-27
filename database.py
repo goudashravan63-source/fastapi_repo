@@ -4,24 +4,24 @@
 # sql_database_url = "postgresql+psycopg://postgres:db%40123@localhost/fastapi"
 # engine = create_engine(sql_database_url)
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
 import os
 
-from sqlalchemy import create_engine
-from sqlalchemy.engine import URL
-from sqlalchemy.orm import declarative_base, sessionmaker
-from config import settings
-# You can override everything with one DATABASE_URL environment variable.
-# Otherwise the values below are used. URL.create() takes care of special
-# characters in the password (like @), so no manual encoding is needed.
-DATABASE_URL = os.getenv("DATABASE_URL")
 from dotenv import load_dotenv
-load_dotenv()
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL, make_url
+from sqlalchemy.orm import declarative_base, sessionmaker
 
+from config import settings
 
+load_dotenv()  # must run before reading the variable
 
+raw_url = os.getenv("DATABASE_URL")
 
-if DATABASE_URL is None:
+if raw_url:
+    # Neon / Render: use the full URL with the psycopg driver
+    DATABASE_URL = make_url(raw_url).set(drivername="postgresql+psycopg")
+else:
+    # Local: build from the separate settings
     DATABASE_URL = URL.create(
         drivername="postgresql+psycopg",
         username=settings.database_username,
@@ -30,6 +30,7 @@ if DATABASE_URL is None:
         port=int(settings.database_port),
         database=settings.database_name,
     )
+    
 
     
 def get_db():
@@ -48,4 +49,5 @@ if str(DATABASE_URL).startswith("sqlite"):
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
