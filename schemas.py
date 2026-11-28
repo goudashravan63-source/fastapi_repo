@@ -29,6 +29,13 @@ from typing import Optional
 from typing import Annotated
 from pydantic import Field
 
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    
+    model_config = ConfigDict(from_attributes=True)
 class PostResponse(BaseModel):
     id: int
     title: str
@@ -54,11 +61,7 @@ class UserCreate(BaseModel):
 class Token(BaseModel):
     id: Optional[int] = None
     
-class UserResponse(BaseModel):
-    id: int
-    email: EmailStr
-    
-    model_config = ConfigDict(from_attributes=True)
+
 
 class UserLogin(BaseModel):
     email: EmailStr
